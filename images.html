@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 核心：适配所有手机屏幕 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>产品说明书</title>
+    <style>
+        /* 基础重置 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.5;
+            padding: 15px;
+        }
+        
+        /* 头部 */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #007bff;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+        
+        /* 页面容器 */
+        .page-container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* 单页样式 */
+        .page {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .page:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        /* 图片样式 */
+        .page-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-bottom: 1px solid #eee;
+        }
+        
+        /* 页码 */
+        .page-number {
+            text-align: center;
+            padding: 12px;
+            color: #666;
+            font-size: 0.9rem;
+            background: #f9f9f9;
+        }
+        
+        /* 导航栏 */
+        .nav-bar {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 12px 25px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .nav-btn:active {
+            background: #0056b3;
+            transform: scale(0.95);
+        }
+        
+        #page-indicator {
+            font-weight: 600;
+            color: #007bff;
+            min-width: 80px;
+            text-align: center;
+            font-size: 1rem;
+        }
+        
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 25px 15px 40px;
+            color: #95a5a6;
+            font-size: 0.85rem;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+        }
+        
+        /* 手机横屏适配 */
+        @media (orientation: landscape) {
+            .page-container {
+                max-width: 90%;
+            }
+        }
+        
+        /* 平板适配 */
+        @media (min-width: 768px) {
+            body { padding: 25px; }
+            .page-container { max-width: 750px; }
+            .header h1 { font-size: 2.2rem; }
+        }
+        
+        /* 打印样式 */
+        @media print {
+            .nav-bar, .footer { display: none; }
+            .page { box-shadow: none; margin-bottom: 5mm; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <div class="header">
+        <h1>产品说明书</h1>
+        <p>高清电子版 - 适配移动设备浏览</p>
+    </div>
+    
+    <!-- 页面容器 -->
+    <div class="page-container" id="page-container">
+        <!-- 页面会通过JavaScript动态插入 -->
+    </div>
+    
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+        <button class="nav-btn" onclick="changePage(-1)" aria-label="上一页">‹</button>
+        <div id="page-indicator">1 / 10</div>
+        <button class="nav-btn" onclick="changePage(1)" aria-label="下一页">›</button>
+    </div>
+    
+    <!-- 页脚 -->
+    <div class="footer">
+        <p>© 2025 PMA901智能电力参数测量仪 | 本说明书内容仅供参考，请以实物为准</p>
+        <p>扫码查看最新版本 | 服务热线：400-1092-111</p>
+    </div>
+
+    <script>
+        // ========== ⚙️ 配置区域：请根据实际情况修改！==========
+        const CONFIG = {
+            totalPages: 20,           // 您的PDF总页数
+            imageFolder: 'images',   // 图片文件夹名称
+            imagePrefix: 'page_',     // 图片名前缀（如 page_1.png）
+            imageSuffix: '.png',      // 图片后缀
+            productName: '产品说明书'  // 产品名称
+        };
+        // ===================================================
+        
+        let currentPage = 1;
+        const container = document.getElementById('page-container');
+        const indicator = document.getElementById('page-indicator');
+        
+        // 1. 初始化所有页面
+        function initPages() {
+            container.innerHTML = '';
+            
+            for(let i = 1; i <= CONFIG.totalPages; i++) {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'page';
+                pageDiv.id = `page-${i}`;
+                
+                const img = document.createElement('img');
+                img.className = 'page-img';
+                img.loading = 'lazy';  // 懒加载提升性能
+                img.alt = `${CONFIG.productName} 第 ${i} 页`;
+                img.src = `${CONFIG.imageFolder}${CONFIG.imagePrefix}${i}${CONFIG.imageSuffix}`;
+                
+                const numDiv = document.createElement('div');
+                numDiv.className = 'page-number';
+                numDiv.textContent = `第 ${i} 页`;
+                
+                pageDiv.appendChild(img);
+                pageDiv.appendChild(numDiv);
+                container.appendChild(pageDiv);
+            }
+            
+            updateIndicator();
+            scrollToPage(1);
+        }
+        
+        // 2. 翻页功能
+        function changePage(delta) {
+            const newPage = currentPage + delta;
+            if (newPage < 1 || newPage > CONFIG.totalPages) {
+                return; // 超出范围
+            }
+            currentPage = newPage;
+            scrollToPage(currentPage);
+            updateIndicator();
+        }
+        
+        // 3. 滚动到指定页面
+        function scrollToPage(pageNum) {
+            const element = document.getElementById(`page-${pageNum}`);
+            if (element) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+        
+        // 4. 更新页码指示器
+        function updateIndicator() {
+            indicator.textContent = `${currentPage}
